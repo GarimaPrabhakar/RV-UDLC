@@ -25,7 +25,7 @@ def add_signal(old_signal, t, amplitude, period):
     return old_signal + _sinfunc(t, period, amplitude)
 
 
-class timeSeries:
+class TimeSeries:
     def __init__(self, time, signal_y, error):
         """
         Constructs a timeSeries object with given timestamps and given y-values. Models the addition of a set
@@ -55,16 +55,16 @@ class timeSeries:
         increment = (end_amp - start_amp) / num_signals
         amp = start_amp
         for signal in range(num_signals):
-            self._yNew = add_signal(self._yNew, self.t, amp, period)
+            self._y_added_signals = add_signal(self._y_added_signals, time, amp, period)
 
             frequency = 1 / period
             ls = LombScargle(self.t, add_signal(self.y, self.t, amp, period), self.err)
             fap = ls.false_alarm_probability(ls.power(frequency))
 
-            self._signal_box = self.signal_box.append([period, amp, fap])
+            self._signal_box = self._signal_box.append([period, amp, fap])
             amp = amp + increment
 
-        return self._yNew
+        return self._y_added_signals
 
     def get_signal_box(self):
         """
@@ -85,9 +85,15 @@ class timeSeries:
         """
         return self._y_added_signals
 
-    def check_FAP(self, fap_threshold=0.001):
+    def check_FAP(self, signal_box=None, fap_threshold=0.001):
         """
         Returns the signal period and amplitude with the false alarm probability closest to the given threshold.
+        :param signal_box: a numpy array of the signals to be checked (format is [period, amplitude, fap]
+        for each row in the array).
         :param fap_threshold: the FAP threshold that every signal will be compared to.
-        :return: the 
+        :return: the period and amplitude at which the signal has a FAP closest to 0.001
         """
+        if signal_box is None:
+            return self._signal_box[(np.abs(self._signal_box[:, 3] - fap_threshold).argmin()), 3]
+        else:
+            return signal_box[(np.abs(signal_box[:, 3] - fap_threshold).argmin()), 3]
