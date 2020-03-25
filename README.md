@@ -9,9 +9,17 @@ An upper detection limit calculator (UDLC) for radial velocity measurements. Fee
 
 Numpy, pandas and astropy can be installed via pip or conda.
 
-To use pip to install these, simply type this in terminal:
+To use pip to install these packages, simply type this in terminal:
 ```bash
 pip install numpy
 pip install astropy
 pip install pandas
+```
+
+To use conda to install these packages, type this in terminal:
+
+```bash
+conda install numpy
+conda install astropy
+conda install pandas
 ```
