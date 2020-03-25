@@ -4,6 +4,7 @@ An upper detection limit calculator (UDLC) for radial velocity measurements. Fee
 ## Dependencies
 - Python 3 (or higher)
 - Numpy 
-- Astropy 
+- Astropy
+- Pandas
 
-Both numpy and astropy can be installed via pip or conda.
+Numpy, pandas and astropy can be installed via pip or conda.
