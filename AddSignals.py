@@ -25,7 +25,7 @@ def add_signal(old_signal, t, amplitude, period):
     return old_signal + _sinfunc(t, period, amplitude)
 
 
-class TimeSeries:
+class AddingTimeSeries:
     def __init__(self, time, signal_y, error):
         """
         Constructs a timeSeries object with given timestamps and given y-values. Models the addition of a set
@@ -40,7 +40,7 @@ class TimeSeries:
 
         # Some storage variables
         self._y_added_signals = signal_y  # the modified signal
-        self._signal_box = np.empty(0, 3)  # Contains period, amplitude, and FAP for each signal
+        self._signal_box = np.empty((1, 3))  # Contains period, amplitude, and FAP for each signal
 
     def add_increment_signals(self, period, start_amp, end_amp, num_signals=1000):
         """
@@ -51,6 +51,7 @@ class TimeSeries:
         :param num_signals: The number of signals to add.
         :return:
         """
+        print("Add Increment Signals")
         time = self.t - self.t[0]
         increment = (end_amp - start_amp) / num_signals
         amp = start_amp
@@ -61,7 +62,7 @@ class TimeSeries:
             ls = LombScargle(self.t, add_signal(self.y, self.t, amp, period), self.err)
             fap = ls.false_alarm_probability(ls.power(frequency))
 
-            self._signal_box = self._signal_box.append([period, amp, fap])
+            self._signal_box = np.append(self._signal_box, np.array([period, amp, fap]))
             amp = amp + increment
 
         return self._y_added_signals
@@ -94,6 +95,8 @@ class TimeSeries:
         :return: the period and amplitude at which the signal has a FAP closest to 0.001
         """
         if signal_box is None:
-            return self._signal_box[(np.abs(self._signal_box[:, 3] - fap_threshold).argmin()), 3]
+            print(self._signal_box)
+            index = np.abs(self._signal_box[:, 2] - fap_threshold).argmin()
+            return self._signal_box[index, 2]
         else:
-            return signal_box[(np.abs(signal_box[:, 3] - fap_threshold).argmin()), 3]
+            return signal_box[(np.abs(signal_box[:, 2] - fap_threshold).argmin()), 2]

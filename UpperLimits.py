@@ -41,9 +41,10 @@ class UpperLimit:
 
         return signal[0], signal[1]
 
-    def upper_limits_array(self, periods, fap_threshold=0.01):
+    def upper_limits_array(self, periods, num_signals=1000, fap_threshold=0.01):
         """
         Computes the upper detection limits on period and amplitude for a numpy array of periods.
+        :param num_signals: the number of signals used to constrain the upper limit
         :param fap_threshold: the false alarm probability threshold at which a signal is statistically significant
         enough to be an exoplanet. The default is 0.001, as determined by Zechmeister et al. (2009).
         :param periods: the numpy array of periods to calculate the amplitude
@@ -52,7 +53,8 @@ class UpperLimit:
         amplitude = []
         period = []
         for per in periods:
-            p, a = UpperLimit(self.t, self.y, self.err).get_amplitude_limits(per, fap_threshold=fap_threshold)
+            p, a = UpperLimit(self.t, self.y, self.err).get_amplitude_limits(per, num_signals=num_signals,
+                                                                             fap_threshold=fap_threshold)
             amplitude.append(a)
             period.append(p)
 
@@ -70,4 +72,5 @@ class UpperLimit:
         :return: a pandas data frame with the Period and Amplitude upper detection limits
         """
         per = np.linspace(start_per, end_per, num_datapoints)
-        return UpperLimit(self.t, self.y, self.err).upper_limits_array(periods=per, fap_threshold=fap_threshold)
+        return UpperLimit(self.t, self.y, self.err).upper_limits_array(periods=per, num_signals=num_datapoints,
+                                                                       fap_threshold=fap_threshold)
