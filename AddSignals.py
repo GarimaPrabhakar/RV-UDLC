@@ -34,13 +34,14 @@ class AddingTimeSeries:
         :param signal_y: the y-values (numpy array)
         :param error: the error in the y-values (numpy array)
         """
+
         self.t = time
         self.y = signal_y
         self.err = error
 
         # Some storage variables
         self._y_added_signals = signal_y  # the modified signal
-        self._signal_box = np.empty((1, 3))  # Contains period, amplitude, and FAP for each signal
+        self._signal_box = np.zeros((1, 3))  # Contains period, amplitude, and FAP for each signal
 
     def add_increment_signals(self, period, start_amp, end_amp, num_signals=1000):
         """
@@ -53,6 +54,7 @@ class AddingTimeSeries:
         """
         print("Add Increment Signals")
         time = self.t - self.t[0]
+        print(self.t)
         increment = (end_amp - start_amp) / num_signals
         amp = start_amp
         for signal in range(num_signals):
