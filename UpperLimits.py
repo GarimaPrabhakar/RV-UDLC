@@ -38,8 +38,9 @@ class UpperLimit:
         ts.add_increment_signals(period, amp_start, amp_end, num_signals)
 
         signal = ts.check_FAP(fap_threshold=fap_threshold)
+        print("SIGNAL...", signal)
 
-        return signal[0], signal[1]
+        return signal[0], signal[1], signal[2]
 
     def upper_limits_array(self, periods, num_signals=1000, fap_threshold=0.01):
         """
@@ -52,13 +53,15 @@ class UpperLimit:
         """
         amplitude = []
         period = []
+        fap_ = []
         for per in periods:
-            p, a = UpperLimit(self.t, self.y, self.err).get_amplitude_limits(per, num_signals=num_signals,
-                                                                             fap_threshold=fap_threshold)
+            p, a, fap = UpperLimit(self.t, self.y, self.err).get_amplitude_limits(per, num_signals=num_signals,
+                                                                                  fap_threshold=fap_threshold)
             amplitude.append(a)
             period.append(p)
+            fap_.append(fap)
 
-        self.ul = pd.DataFrame({"Period": period, "Amplitude": amplitude})
+        self.ul = pd.DataFrame({"Period": period, "Amplitude": amplitude, "FAP": fap_})
         return self.ul
 
     def upper_limits(self, start_per=0.05, end_per=1500, num_datapoints=1000, fap_threshold=0.01):

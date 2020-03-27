@@ -52,19 +52,20 @@ class AddingTimeSeries:
         :param num_signals: The number of signals to add.
         :return:
         """
-        print("Add Increment Signals")
         time = self.t - self.t[0]
-        print(self.t)
         increment = (end_amp - start_amp) / num_signals
         amp = start_amp
+        self._signal_box = np.zeros((num_signals, 3))
         for signal in range(num_signals):
             self._y_added_signals = add_signal(self._y_added_signals, time, amp, period)
 
             frequency = 1 / period
             ls = LombScargle(self.t, add_signal(self.y, self.t, amp, period), self.err)
             fap = ls.false_alarm_probability(ls.power(frequency))
+            print('TEST')
+            print(frequency, fap)
 
-            self._signal_box = np.append(self._signal_box, np.array([period, amp, fap]).reshape(3, 1))
+            self._signal_box[signal] = np.array([period, amp, fap]).reshape(1, 3)
             amp = amp + increment
 
         return self._y_added_signals
@@ -97,8 +98,7 @@ class AddingTimeSeries:
         :return: the period and amplitude at which the signal has a FAP closest to 0.001
         """
         if signal_box is None:
-            print(self._signal_box)
             index = np.abs(self._signal_box[:, 2] - fap_threshold).argmin()
-            return self._signal_box[index, 2]
+            return self._signal_box[index]
         else:
-            return signal_box[(np.abs(signal_box[:, 2] - fap_threshold).argmin()), 2]
+            return signal_box[(np.abs(signal_box[:, 2] - fap_threshold).argmin())]
