@@ -62,8 +62,6 @@ class AddingTimeSeries:
             frequency = 1 / period
             ls = LombScargle(self.t, add_signal(self.y, self.t, amp, period), self.err)
             fap = ls.false_alarm_probability(ls.power(frequency))
-            print('TEST')
-            print(frequency, fap)
 
             self._signal_box[signal] = np.array([period, amp, fap]).reshape(1, 3)
             amp = amp + increment

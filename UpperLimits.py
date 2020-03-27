@@ -38,11 +38,10 @@ class UpperLimit:
         ts.add_increment_signals(period, amp_start, amp_end, num_signals)
 
         signal = ts.check_FAP(fap_threshold=fap_threshold)
-        print("SIGNAL...", signal)
 
         return signal[0], signal[1], signal[2]
 
-    def upper_limits_array(self, periods, num_signals=1000, fap_threshold=0.01):
+    def upper_limits_array(self, periods, fap_threshold=0.01, amp_start=0.05, amp_end=10, amprange=10000):
         """
         Computes the upper detection limits on period and amplitude for a numpy array of periods.
         :param num_signals: the number of signals used to constrain the upper limit
@@ -55,16 +54,19 @@ class UpperLimit:
         period = []
         fap_ = []
         for per in periods:
-            p, a, fap = UpperLimit(self.t, self.y, self.err).get_amplitude_limits(per, num_signals=num_signals,
-                                                                                  fap_threshold=fap_threshold)
+            p, a, fap = UpperLimit(self.t, self.y, self.err).get_amplitude_limits(per, num_signals=amprange,
+                                                                                  fap_threshold=fap_threshold,
+                                                                                  amp_start=amp_start, amp_end=amp_end)
             amplitude.append(a)
             period.append(p)
             fap_.append(fap)
+            print("Finished calculation for upper detection limit at period: ", per, " with the FAP at ", fap)
 
         self.ul = pd.DataFrame({"Period": period, "Amplitude": amplitude, "FAP": fap_})
         return self.ul
 
-    def upper_limits(self, start_per=0.05, end_per=1500, num_datapoints=1000, fap_threshold=0.01):
+    def upper_limits(self, start_per=0.05, end_per=1500, num_datapoints=1000, fap_threshold=0.01,
+                     amp_start=0.05, amp_end=1000, amprange=10000):
         """
         Computes the upper detection limits on period and amplitude for a numpy array of periods.
         :param fap_threshold: he false alarm probability threshold at which a signal is statistically significant
@@ -76,4 +78,5 @@ class UpperLimit:
         """
         per = np.linspace(start_per, end_per, num_datapoints)
         return UpperLimit(self.t, self.y, self.err).upper_limits_array(periods=per, num_signals=num_datapoints,
-                                                                       fap_threshold=fap_threshold)
+                                                                       fap_threshold=fap_threshold, amp_start=amp_start,
+                                                                       amp_end=amp_end, amprange=amprange)
