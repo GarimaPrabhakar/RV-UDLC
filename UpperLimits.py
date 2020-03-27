@@ -20,7 +20,7 @@ class UpperLimit:
         # Some storage variables
         self.ul = pd.DataFrame()
 
-    def get_amplitude_limits(self, period, amp_start=0.05, amp_end=10, fap_threshold=0.001):
+    def get_amplitude_limits(self, period, amp_start=0.01, amp_end=10, fap_threshold=0.001):
         """
         Computes the upper detection limit at a given period by iteratively injecting sinusoidal signals
         at a range of amplitudes and recovering the signals at which the false alarm probability is at 0.001,
@@ -60,14 +60,15 @@ class UpperLimit:
             period.append(upper_limits_[1])
             fap_.append(upper_limits_[2])
 
-            print("Finished calculation for upper detection limit at period: ", upper_limits_[0],
-                  " with the FAP at ", upper_limits_[2])
+            if not [round(x, 3) != fap_threshold for x in fap_]:
+                print("Warning, FAP resolves to a value smaller than the lower amplitude bound. "
+                      "Remember to subract signals that could be planetary or stellar noise.")
 
         self.ul = pd.DataFrame({"Period": period, "Amplitude": amplitude, "FAP": fap_})
         return self.ul
 
-    def upper_limits(self, start_per=0.05, num_datapoints=1000, end_per=1000, fap_threshold=0.01,
-                     amp_start=0.05, amp_end=1000, amprange=10000):
+    def upper_limits(self, start_per=0.05, num_datapoints=1000, end_per=1000, fap_threshold=0.001,
+                     amp_start=0, amp_end=2000):
         """
         Computes the upper detection limits on period and amplitude for a numpy array of periods.
         :param amprange: the number of amplitudes to test
@@ -83,4 +84,4 @@ class UpperLimit:
         per = np.linspace(start_per, end_per, num_datapoints)
         return UpperLimit(self.t, self.y, self.err).upper_limits_array(periods=per,
                                                                        fap_threshold=fap_threshold, amp_start=amp_start,
-                                                                       amp_end=amp_end, amprange=amprange)
+                                                                       amp_end=amp_end)

@@ -57,15 +57,16 @@ class AddingTimeSeries(object):
         fap = 1
         upperLimits = []
         frequency = 1 / period
-
+        # IF DEBUGGING, UNCOMMENT THE COMMENTED LINES OF CODE
+        # counter = 0
         while fap_threshold > fap or fap > fap_threshold + fap_threshold / 2:
+            # counter = counter + 1
+            # print("Counter: ", counter, "Period: ", period, "Current amplitude being tested: ", amp, "FAP: ", fap)
             ls = LombScargle(self.t, add_signal(self.y, time, amp, period), self.err)
             fap = ls.false_alarm_probability(ls.power(frequency))
 
             if fap_threshold > fap:  # If FAP is too small, DECREASE the amplitude
-                if start == end_amp:
-                    print("Warning, FAP resolves to a value smaller than the lower amplitude bound. Setting FAP to ",
-                          fap, " with an ampltude of ", amp, ".")
+                if round(start, 6) == end_amp or round(end, 6) == start_amp:
 
                     upperLimits.append(period)
                     upperLimits.append(amp)
@@ -74,13 +75,10 @@ class AddingTimeSeries(object):
 
                 else:
                     end = amp
-                    amp = (start + end) / 2
+                    amp = abs(start + end) / 2
 
             elif fap_threshold + fap_threshold / 2 < fap:  # If FAP is too large, INCREASE the amplitude
-                if end == start_amp:
-                    print("Warning, FAP resolves to a value larger than the upper amplitude bound. Setting FAP to ",
-                          fap, " with an ampltude of ", amp, ".")
-
+                if round(start, 6) == end_amp or round(end, 6) == start_amp:
                     upperLimits.append(period)
                     upperLimits.append(amp)
                     upperLimits.append(fap)
@@ -88,7 +86,7 @@ class AddingTimeSeries(object):
 
                 else:
                     start = amp
-                    amp = (start + end) / 2
+                    amp = abs(start + end) / 2
 
             else:
                 upperLimits.append(period)
