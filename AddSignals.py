@@ -42,8 +42,7 @@ class AddingTimeSeries(object):
         self._y_added_signals = signal_y  # the modified signal
         self._signal_box = np.zeros((1, 3))  # Contains period, amplitude, and FAP for each signal
 
-    def add_increment_signals(self, period, start_amp, end_amp, fap_threshold=0.001, num_signals=1000,
-                              starting_incrememt=10):
+    def add_increment_signals(self, period, start_amp, end_amp, fap_threshold=0.001, num_signals=1000):
         """
         Add sine signals to the time series object with a range of amplitudes.
         :param starting_incrememt:
@@ -63,73 +62,50 @@ class AddingTimeSeries(object):
         self._signal_box = np.zeros((num_signals, 3))
 
         fap = 1
-        counter = 0
+        upperLimits = []
         frequency = 1 / period
         fap_threshold = 0.001
 
-        while fap_threshold > fap > fap_threshold + fap_threshold / 2:
+        while fap_threshold > fap or fap > fap_threshold + fap_threshold / 2:
             ls = LombScargle(self.t, add_signal(self.y, time, amp, period), self.err)
             fap = ls.false_alarm_probability(ls.power(frequency))
 
-            if fap_threshold > fap:  # If FAP is too small, increase the amplitude
+            if fap_threshold > fap:  # If FAP is too small, DECREASE the amplitude
                 if start == end_amp:
                     print("Warning, FAP resolves to a value smaller than the lower amplitude bound. Setting FAP to ",
                           fap, " with an ampltude of ", amp, ".")
 
-                    return period, amp, fap
+                    upperLimits.append(period)
+                    upperLimits.append(amp)
+                    upperLimits.append(fap)
+                    break
 
                 else:
-                    start = amp
+                    end = amp
                     amp = (start + end) / 2
 
-            elif fap_threshold + fap_threshold / 2 < fap:  # If FAP is too large, decrease the amplitude
+            elif fap_threshold + fap_threshold / 2 < fap:  # If FAP is too large, INCREASE the amplitude
                 if end == start_amp:
                     print("Warning, FAP resolves to a value larger than the upper amplitude bound. Setting FAP to ",
                           fap, " with an ampltude of ", amp, ".")
 
-                    return period, amp, fap
-
-                else:
-                    end = amp
-                    amp = (start + end) / 2
-
-            else:
-                return period, amp, fap
-
-        while 10 > int(fap * 10000) or int(fap * 10000) > 15:
-            # self._y_added_signals = add_signal(self._y_added_signals, time, amp, period)
-
-            ls = LombScargle(self.t, add_signal(self.y, time, amp, period), self.err)
-            fap = ls.false_alarm_probability(ls.power(frequency))
-
-            if fap_threshold + (fap_threshold / 2) < fap:
-                if start_amp == end:
-                    print("Warning, FAP resolves to a value larger than the upper amplitude bound. Setting FAP to ",
-                          fap, " with an ampltude of ", amp, ".")
-                    self._signal_box = np.array([period, amp, fap]).reshape(1, 3)
+                    upperLimits.append(period)
+                    upperLimits.append(amp)
+                    upperLimits.append(fap)
                     break
+
                 else:
-                    amp = (start + end) / 2
                     start = amp
-
-            elif fap_threshold > fap:
-                if end_amp == start:
-                    print("Warning, FAP resolves to a value lower than the lower amplitude bound. Setting FAP to ", fap,
-                          " with an ampltude of ", amp, ".")
-                    self._signal_box = np.array([period, amp, fap]).reshape(1, 3)
-                    break
-                else:
                     amp = (start + end) / 2
-                    end = amp
 
             else:
-                self._signal_box = np.array([period, amp, fap]).reshape(1, 3)
+                upperLimits.append(period)
+                upperLimits.append(amp)
+                upperLimits.append(fap)
                 break
 
-            counter = counter + 1
+        return upperLimits[0], upperLimits[1], upperLimits[2]
 
-            print(counter, amp, fap)
-        return period, amp, fap
 
     def get_signal_box(self):
         """

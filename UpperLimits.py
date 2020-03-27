@@ -57,6 +57,8 @@ class UpperLimit:
             p, a, fap = UpperLimit(self.t, self.y, self.err).get_amplitude_limits(per, num_signals=amprange,
                                                                                   fap_threshold=fap_threshold,
                                                                                   amp_start=amp_start, amp_end=amp_end)
+
+            print(p, a, fap)
             amplitude.append(a)
             period.append(p)
             fap_.append(fap)
