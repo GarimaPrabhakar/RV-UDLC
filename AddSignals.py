@@ -38,33 +38,25 @@ class AddingTimeSeries(object):
         self.t = time
         self.y = signal_y
         self.err = error
-        # Some storage variables
-        self._y_added_signals = signal_y  # the modified signal
-        self._signal_box = np.zeros((1, 3))  # Contains period, amplitude, and FAP for each signal
 
-    def add_increment_signals(self, period, start_amp, end_amp, fap_threshold=0.001, num_signals=1000):
+    def add_increment_signals(self, period, start_amp=0.001, end_amp=2000, fap_threshold=0.001):
         """
         Add sine signals to the time series object with a range of amplitudes.
-        :param starting_incrememt:
+        :param fap_threshold:
         :param period:
         :param start_amp:
         :param end_amp:
-        :param num_signals: The number of signals to add.
         :return:
         """
         time = self.t - self.t[0]
-        start_amp = 0.001
-        end_amp = 2000
         start = start_amp
         end = end_amp
-        # increment = starting_incrememt
+
         amp = (start_amp + end_amp) / 2
-        self._signal_box = np.zeros((num_signals, 3))
 
         fap = 1
         upperLimits = []
         frequency = 1 / period
-        fap_threshold = 0.001
 
         while fap_threshold > fap or fap > fap_threshold + fap_threshold / 2:
             ls = LombScargle(self.t, add_signal(self.y, time, amp, period), self.err)
@@ -104,38 +96,4 @@ class AddingTimeSeries(object):
                 upperLimits.append(fap)
                 break
 
-        return upperLimits[0], upperLimits[1], upperLimits[2]
-
-
-    def get_signal_box(self):
-        """
-        Returns a numpy array with information on all signals added to the original time series.
-        Each row contains the period, amplitude, and false alarm probability of the signal in that order.
-        If no signals have been added to the time series, this method will return an empty
-        array of length 0 with 3 columns.
-        :return: the numpy array containing the period and amplitude of each signal.
-        """
-        return self._signal_box
-
-    def get_modified_time_series(self):
-        """
-        Returns a numpy array with the sum of all signals added to the original time series. If no signals have been
-        added to the time series, this method will return an empty array with the length of the time series and
-        1 column.
-        :return: the numpy array containing the sum of all signals added to the original time series.
-        """
-        return self._y_added_signals
-
-    def check_FAP(self, signal_box=None, fap_threshold=0.001):
-        """
-        Returns the signal period and amplitude with the false alarm probability closest to the given threshold.
-        :param signal_box: a numpy array of the signals to be checked (format is [period, amplitude, fap]
-        for each row in the array).
-        :param fap_threshold: the FAP threshold that every signal will be compared to.
-        :return: the period and amplitude at which the signal has a FAP closest to 0.001
-        """
-        if signal_box is None:
-            index = np.abs(self._signal_box[:, 2] - fap_threshold).argmin()
-            return self._signal_box[index]
-        else:
-            return signal_box[(np.abs(signal_box[:, 2] - fap_threshold).argmin())]
+        return upperLimits

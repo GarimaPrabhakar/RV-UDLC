@@ -20,7 +20,7 @@ class UpperLimit:
         # Some storage variables
         self.ul = pd.DataFrame()
 
-    def get_amplitude_limits(self, period, amp_start=0.05, amp_end=10, num_signals=1000, fap_threshold=0.001):
+    def get_amplitude_limits(self, period, amp_start=0.05, amp_end=10, fap_threshold=0.001):
         """
         Computes the upper detection limit at a given period by iteratively injecting sinusoidal signals
         at a range of amplitudes and recovering the signals at which the false alarm probability is at 0.001,
@@ -35,16 +35,14 @@ class UpperLimit:
         :return: the period and amplitude of the upper detection limit.
         """
         ts = AddingTimeSeries(self.t, self.y, self.err)
-        per, amp, fap = ts.add_increment_signals(period, amp_start, amp_end, num_signals)
-
-        # signal = ts.check_FAP(fap_threshold=fap_threshold)
+        per, amp, fap = ts.add_increment_signals(period=period, start_amp=amp_start,
+                                                 end_amp=amp_end, fap_threshold=fap_threshold)
 
         return per, amp, fap
 
-    def upper_limits_array(self, periods, fap_threshold=0.01, amp_start=0.05, amp_end=10, amprange=10000):
+    def upper_limits_array(self, periods, fap_threshold=0.01, amp_start=0.05, amp_end=10):
         """
         Computes the upper detection limits on period and amplitude for a numpy array of periods.
-        :param num_signals: the number of signals used to constrain the upper limit
         :param fap_threshold: the false alarm probability threshold at which a signal is statistically significant
         enough to be an exoplanet. The default is 0.001, as determined by Zechmeister et al. (2009).
         :param periods: the numpy array of periods to calculate the amplitude
@@ -54,15 +52,16 @@ class UpperLimit:
         period = []
         fap_ = []
         for per in periods:
-            p, a, fap = UpperLimit(self.t, self.y, self.err).get_amplitude_limits(per, num_signals=amprange,
-                                                                                  fap_threshold=fap_threshold,
-                                                                                  amp_start=amp_start, amp_end=amp_end)
+            upper_limits_ = UpperLimit(self.t, self.y, self.err).get_amplitude_limits(period=per, amp_start=amp_start,
+                                                                                      amp_end=amp_end,
+                                                                                      fap_threshold=fap_threshold)
 
-            print(p, a, fap)
-            amplitude.append(a)
-            period.append(p)
-            fap_.append(fap)
-            print("Finished calculation for upper detection limit at period: ", per, " with the FAP at ", fap)
+            amplitude.append(upper_limits_[0])
+            period.append(upper_limits_[1])
+            fap_.append(upper_limits_[2])
+
+            print("Finished calculation for upper detection limit at period: ", upper_limits_[0],
+                  " with the FAP at ", upper_limits_[2])
 
         self.ul = pd.DataFrame({"Period": period, "Amplitude": amplitude, "FAP": fap_})
         return self.ul
