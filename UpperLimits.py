@@ -35,11 +35,11 @@ class UpperLimit:
         :return: the period and amplitude of the upper detection limit.
         """
         ts = AddingTimeSeries(self.t, self.y, self.err)
-        ts.add_increment_signals(period, amp_start, amp_end, num_signals)
+        per, amp, fap = ts.add_increment_signals(period, amp_start, amp_end, num_signals)
 
-        signal = ts.check_FAP(fap_threshold=fap_threshold)
+        # signal = ts.check_FAP(fap_threshold=fap_threshold)
 
-        return signal[0], signal[1], signal[2]
+        return per, amp, fap
 
     def upper_limits_array(self, periods, fap_threshold=0.01, amp_start=0.05, amp_end=10, amprange=10000):
         """
@@ -65,10 +65,13 @@ class UpperLimit:
         self.ul = pd.DataFrame({"Period": period, "Amplitude": amplitude, "FAP": fap_})
         return self.ul
 
-    def upper_limits(self, start_per=0.05, end_per=1500, num_datapoints=1000, fap_threshold=0.01,
+    def upper_limits(self, start_per=0.05, num_datapoints=1000, end_per=1000, fap_threshold=0.01,
                      amp_start=0.05, amp_end=1000, amprange=10000):
         """
         Computes the upper detection limits on period and amplitude for a numpy array of periods.
+        :param amprange: the number of amplitudes to test
+        :param amp_end: the maximum amplitude to test
+        :param amp_start: the minimum amplitude to test
         :param fap_threshold: he false alarm probability threshold at which a signal is statistically significant
         enough to be an exoplanet. The default is 0.001, as determined by Zechmeister et al. (2009).
         :param start_per: The minimum period at which the upper detection limit will be computed.
@@ -77,6 +80,6 @@ class UpperLimit:
         :return: a pandas data frame with the Period and Amplitude upper detection limits
         """
         per = np.linspace(start_per, end_per, num_datapoints)
-        return UpperLimit(self.t, self.y, self.err).upper_limits_array(periods=per, num_signals=num_datapoints,
+        return UpperLimit(self.t, self.y, self.err).upper_limits_array(periods=per,
                                                                        fap_threshold=fap_threshold, amp_start=amp_start,
                                                                        amp_end=amp_end, amprange=amprange)
